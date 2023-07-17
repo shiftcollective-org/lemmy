@@ -1,4 +1,3 @@
-pub mod api_routes_http;
 pub mod code_migrations;
 #[cfg(feature = "prometheus-metrics")]
 pub mod prometheus_metrics;
@@ -8,7 +7,6 @@ pub mod scheduled_tasks;
 pub mod telemetry;
 
 use crate::{code_migrations::run_advanced_migrations, root_span_builder::QuieterRootSpanBuilder};
-use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_cors::Cors;
 use actix_web::{
   middleware::{self, ErrorHandlers},
@@ -26,7 +24,6 @@ use lemmy_api_common::{
     local_site_rate_limit_to_rate_limit_config,
   },
 };
-use lemmy_apub::{VerifyUrlData, FEDERATION_HTTP_FETCH_LIMIT};
 use lemmy_db_schema::{
   source::secret::Secret,
   utils::{build_db_pool, get_database_url, run_migrations},
@@ -37,7 +34,6 @@ use lemmy_utils::{
   rate_limit::RateLimitCell,
   response::jsonify_plain_text_errors,
   settings::SETTINGS,
-  SYNCHRONOUS_FEDERATION,
 };
 use reqwest::Client;
 use reqwest_middleware::ClientBuilder;
@@ -144,19 +140,6 @@ pub async fn start_lemmy_server() -> Result<(), LemmyError> {
 
   let settings_bind = settings.clone();
 
-  let federation_config = FederationConfig::builder()
-    .domain(settings.hostname.clone())
-    .app_data(context.clone())
-    .client(client.clone())
-    .http_fetch_limit(FEDERATION_HTTP_FETCH_LIMIT)
-    .worker_count(settings.worker_count)
-    .retry_count(settings.retry_count)
-    .debug(*SYNCHRONOUS_FEDERATION)
-    .http_signature_compat(true)
-    .url_verifier(Box::new(VerifyUrlData(context.inner_pool().clone())))
-    .build()
-    .await?;
-
   // this must come before the HttpServer creation
   // creates a middleware that populates http metrics for each path, method, and status code
   #[cfg(feature = "prometheus-metrics")]
@@ -190,18 +173,15 @@ pub async fn start_lemmy_server() -> Result<(), LemmyError> {
       .wrap(TracingLogger::<QuieterRootSpanBuilder>::new())
       .wrap(ErrorHandlers::new().default_handler(jsonify_plain_text_errors))
       .app_data(Data::new(context.clone()))
-      .app_data(Data::new(rate_limit_cell.clone()))
-      .wrap(FederationMiddleware::new(federation_config.clone()));
+      .app_data(Data::new(rate_limit_cell.clone()));
 
     #[cfg(feature = "prometheus-metrics")]
     let app = app.wrap(prom_api_metrics.clone());
 
     // The routes
     app
-      .configure(|cfg| api_routes_http::config(cfg, rate_limit_cell))
       .configure(|cfg| {
         if federation_enabled {
-          lemmy_apub::http::routes::config(cfg);
           webfinger::config(cfg);
         }
       })

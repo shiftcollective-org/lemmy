@@ -32,6 +32,12 @@ pub struct Settings {
   /// Port where lemmy should listen for incoming requests
   #[default(8536)]
   pub port: u16,
+  /// Port where lemmy federation service should listen for incoming requests
+  #[default(8537)]
+  pub federation_service_port: u16,
+  /// Port where lemmy api service should listen for incoming requests
+  #[default(8538)]
+  pub api_service_port: u16,
   /// Whether the site is available over TLS. Needs to be true for federation to work.
   #[default(true)]
   pub tls_enabled: bool,

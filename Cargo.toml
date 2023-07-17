@@ -47,7 +47,6 @@ members = [
   "crates/api",
   "crates/api_crud",
   "crates/api_common",
-  "crates/apub",
   "crates/utils",
   "crates/db_schema",
   "crates/db_views",
@@ -59,7 +58,6 @@ members = [
 [workspace.dependencies]
 lemmy_api = { version = "=0.18.1", path = "./crates/api" }
 lemmy_api_crud = { version = "=0.18.1", path = "./crates/api_crud" }
-lemmy_apub = { version = "=0.18.1", path = "./crates/apub" }
 lemmy_utils = { version = "=0.18.1", path = "./crates/utils" }
 lemmy_db_schema = { version = "=0.18.1", path = "./crates/db_schema" }
 lemmy_api_common = { version = "=0.18.1", path = "./crates/api_common" }
@@ -132,7 +130,6 @@ tokio-postgres-rustls = "0.10.0"
 [dependencies]
 lemmy_api = { workspace = true }
 lemmy_api_crud = { workspace = true }
-lemmy_apub = { workspace = true }
 lemmy_utils = { workspace = true }
 lemmy_db_schema = { workspace = true }
 lemmy_api_common = { workspace = true }

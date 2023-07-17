@@ -9,18 +9,23 @@ use lemmy_db_schema::{
 use lemmy_utils::error::{LemmyError, LemmyErrorType, LemmyResult};
 use moka::future::Cache;
 use once_cell::sync::Lazy;
+use tracing::subscriber::set_global_default;
+use tracing_error::ErrorLayer;
+use tracing_log::LogTracer;
+use tracing_subscriber::{filter::Targets, Registry, prelude::__tracing_subscriber_SubscriberExt, Layer};
 use std::{sync::Arc, time::Duration};
 use url::Url;
 
+pub mod api;
 pub mod activities;
 pub(crate) mod activity_lists;
-pub mod api;
 pub(crate) mod collections;
 pub mod fetcher;
-pub mod http;
+// pub mod http;
 pub(crate) mod mentions;
 pub mod objects;
 pub mod protocol;
+pub mod routes;
 
 pub const FEDERATION_HTTP_FETCH_LIMIT: u32 = 50;
 /// All incoming and outgoing federation actions read the blocklist/allowlist and slur filters
@@ -196,4 +201,39 @@ pub trait SendActivity: Sync {
   ) -> Result<(), LemmyError> {
     Ok(())
   }
+}
+
+pub fn init_logging(opentelemetry_url: &Option<Url>) -> Result<(), LemmyError> {
+  LogTracer::init()?;
+
+  let log_description = std::env::var("RUST_LOG").unwrap_or_else(|_| "info".into());
+
+  let targets = log_description
+    .trim()
+    .trim_matches('"')
+    .parse::<Targets>()?;
+
+  let format_layer = {
+    #[cfg(feature = "json-log")]
+    let layer = tracing_subscriber::fmt::layer().json();
+    #[cfg(not(feature = "json-log"))]
+    let layer = tracing_subscriber::fmt::layer();
+
+    layer.with_filter(targets.clone())
+  };
+
+  let subscriber = Registry::default()
+    .with(format_layer)
+    .with(ErrorLayer::default());
+
+  if let Some(_url) = opentelemetry_url {
+    #[cfg(feature = "console")]
+    telemetry::init_tracing(_url.as_ref(), subscriber, targets)?;
+    #[cfg(not(feature = "console"))]
+    tracing::error!("Feature `console` must be enabled for opentelemetry tracing");
+  } else {
+    set_global_default(subscriber)?;
+  }
+
+  Ok(())
 }
