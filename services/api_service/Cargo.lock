@@ -2255,7 +2255,7 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "lemmy_api"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git#e9e76549a88cfbdab36f00d302cceabcaaa24f4c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2279,7 +2279,7 @@ dependencies = [
 [[package]]
 name = "lemmy_api_common"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git#e9e76549a88cfbdab36f00d302cceabcaaa24f4c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2310,7 +2310,7 @@ dependencies = [
 [[package]]
 name = "lemmy_api_crud"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git#e9e76549a88cfbdab36f00d302cceabcaaa24f4c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "activitypub_federation",
  "actix-web",
@@ -2332,7 +2332,7 @@ dependencies = [
 [[package]]
 name = "lemmy_db_schema"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git#e9e76549a88cfbdab36f00d302cceabcaaa24f4c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "activitypub_federation",
  "async-trait",
@@ -2369,7 +2369,7 @@ dependencies = [
 [[package]]
 name = "lemmy_db_views"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git#e9e76549a88cfbdab36f00d302cceabcaaa24f4c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "diesel",
  "diesel-async",
@@ -2385,7 +2385,7 @@ dependencies = [
 [[package]]
 name = "lemmy_db_views_actor"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git#e9e76549a88cfbdab36f00d302cceabcaaa24f4c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "diesel",
  "diesel-async",
@@ -2399,7 +2399,7 @@ dependencies = [
 [[package]]
 name = "lemmy_db_views_moderator"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git#e9e76549a88cfbdab36f00d302cceabcaaa24f4c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "diesel",
  "diesel-async",
@@ -2412,7 +2412,7 @@ dependencies = [
 [[package]]
 name = "lemmy_utils"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git#e9e76549a88cfbdab36f00d302cceabcaaa24f4c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "actix-web",
  "anyhow",

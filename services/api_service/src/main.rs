@@ -1,22 +1,36 @@
 pub(crate) mod root_span_builder;
 
+use crate::root_span_builder::QuieterRootSpanBuilder;
 use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_cors::Cors;
-use actix_web::{HttpServer, App, middleware::{self, ErrorHandlers}, web::Data};
-use api_service::{FEDERATION_HTTP_FETCH_LIMIT, VerifyUrlData, routes, init_logging};
-use lemmy_api_common::{utils::{check_private_instance_and_federation_enabled, local_site_rate_limit_to_rate_limit_config}, context::LemmyContext};
+use actix_web::{
+  middleware::{self, ErrorHandlers},
+  web::Data,
+  App,
+  HttpServer,
+};
+use api_service::{init_logging, routes, VerifyUrlData, FEDERATION_HTTP_FETCH_LIMIT, version::VERSION};
+use lemmy_api_common::{
+  context::LemmyContext,
+  utils::{
+    check_private_instance_and_federation_enabled,
+    local_site_rate_limit_to_rate_limit_config,
+  },
+};
+use lemmy_db_schema::{source::secret::Secret, utils::build_db_pool};
 use lemmy_db_views::structs::SiteView;
-use lemmy_utils::{error::LemmyError, settings::SETTINGS, rate_limit::RateLimitCell, version::VERSION, REQWEST_TIMEOUT, SYNCHRONOUS_FEDERATION, response::jsonify_plain_text_errors};
-use lemmy_db_schema::{
-  source::secret::Secret,
-  utils::build_db_pool,
+use lemmy_utils::{
+  error::LemmyError,
+  rate_limit::RateLimitCell,
+  response::jsonify_plain_text_errors,
+  settings::SETTINGS,
+  REQWEST_TIMEOUT,
+  SYNCHRONOUS_FEDERATION,
 };
 use reqwest::Client;
 use reqwest_middleware::ClientBuilder;
 use reqwest_tracing::TracingMiddleware;
 use tracing_actix_web::TracingLogger;
-
-use crate::root_span_builder::QuieterRootSpanBuilder;
 
 #[tokio::main]
 pub async fn main() -> Result<(), LemmyError> {
@@ -52,7 +66,8 @@ pub async fn main() -> Result<(), LemmyError> {
 
   println!(
     "Starting http server at {}:{}",
-    settings.bind, 8538 // TODO: Replace with settings.api_service_port
+    settings.bind,
+    settings.api_service_port
   );
 
   let user_agent = format!(
@@ -121,10 +136,9 @@ pub async fn main() -> Result<(), LemmyError> {
       .wrap(FederationMiddleware::new(federation_config.clone()));
 
     // The routes
-    app
-      .configure(|cfg| routes::config(cfg, rate_limit_cell))
+    app.configure(|cfg| routes::config(cfg, rate_limit_cell))
   })
-  .bind((settings_bind.bind, 8538))?  // TODO: Replace with settings_bind.api_service_port
+  .bind((settings_bind.bind, settings_bind.api_service_port))?
   .run()
   .await?;
 

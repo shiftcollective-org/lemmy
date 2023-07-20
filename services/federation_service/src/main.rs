@@ -3,10 +3,10 @@ pub(crate) mod root_span_builder;
 use activitypub_federation::config::{FederationConfig, FederationMiddleware};
 use actix_cors::Cors;
 use actix_web::{HttpServer, App, middleware::{self, ErrorHandlers}, web::Data};
-use federation_service::{FEDERATION_HTTP_FETCH_LIMIT, VerifyUrlData, http::routes, init_logging};
+use federation_service::{FEDERATION_HTTP_FETCH_LIMIT, VerifyUrlData, http::routes, init_logging, version::VERSION};
 use lemmy_api_common::{utils::{check_private_instance_and_federation_enabled, local_site_rate_limit_to_rate_limit_config}, context::LemmyContext};
 use lemmy_db_views::structs::SiteView;
-use lemmy_utils::{error::LemmyError, settings::SETTINGS, rate_limit::RateLimitCell, version::VERSION, REQWEST_TIMEOUT, SYNCHRONOUS_FEDERATION, response::jsonify_plain_text_errors};
+use lemmy_utils::{error::LemmyError, settings::SETTINGS, rate_limit::RateLimitCell, REQWEST_TIMEOUT, SYNCHRONOUS_FEDERATION, response::jsonify_plain_text_errors};
 use lemmy_db_schema::{
   source::secret::Secret,
   utils::build_db_pool,
@@ -52,7 +52,7 @@ pub async fn main() -> Result<(), LemmyError> {
 
   println!(
     "Starting http server at {}:{}",
-    settings.bind, 8537 // TODO: Replace with settings.federation_service_port
+    settings.bind, settings.federation_service_port
   );
 
   let user_agent = format!(
@@ -128,7 +128,7 @@ pub async fn main() -> Result<(), LemmyError> {
         }
       })
   })
-  .bind((settings_bind.bind, 8537))?  // TODO: Replace with settings_bind.federation_service_port
+  .bind((settings_bind.bind, settings_bind.federation_service_port))?
   .run()
   .await?;
 

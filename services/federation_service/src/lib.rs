@@ -24,6 +24,7 @@ pub mod http;
 pub(crate) mod mentions;
 pub mod objects;
 pub mod protocol;
+pub mod version;
 
 pub const FEDERATION_HTTP_FETCH_LIMIT: u32 = 50;
 /// All incoming and outgoing federation actions read the blocklist/allowlist and slur filters

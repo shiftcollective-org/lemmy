@@ -9,18 +9,24 @@ use lemmy_db_schema::{
 use lemmy_utils::error::{LemmyError, LemmyErrorType, LemmyResult};
 use moka::future::Cache;
 use once_cell::sync::Lazy;
+use std::{sync::Arc, time::Duration};
 use tracing::subscriber::set_global_default;
 use tracing_error::ErrorLayer;
 use tracing_log::LogTracer;
-use tracing_subscriber::{filter::Targets, Registry, prelude::__tracing_subscriber_SubscriberExt, Layer};
-use std::{sync::Arc, time::Duration};
+use tracing_subscriber::{
+  filter::Targets,
+  prelude::__tracing_subscriber_SubscriberExt,
+  Layer,
+  Registry,
+};
 use url::Url;
 
-pub mod api;
 pub mod activities;
 pub(crate) mod activity_lists;
+pub mod api;
 pub(crate) mod collections;
 pub mod fetcher;
+pub mod version;
 // pub mod http;
 pub(crate) mod mentions;
 pub mod objects;

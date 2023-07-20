@@ -1,3 +1,14 @@
+use crate::{
+  api::{
+    list_comments::list_comments,
+    list_posts::list_posts,
+    read_community::read_community,
+    read_person::read_person,
+    resolve_object::resolve_object,
+    search::search,
+  },
+  SendActivity,
+};
 use actix_web::{guard, web, Error, HttpResponse, Result};
 use lemmy_api::Perform;
 use lemmy_api_common::{
@@ -96,8 +107,6 @@ use lemmy_api_common::{
 use lemmy_api_crud::PerformCrud;
 use lemmy_utils::{rate_limit::RateLimitCell, spawn_try_task, SYNCHRONOUS_FEDERATION};
 use serde::Deserialize;
-
-use crate::{api::{search::search, resolve_object::resolve_object, read_community::read_community, list_posts::list_posts, list_comments::list_comments, read_person::read_person}, SendActivity};
 
 pub fn config(cfg: &mut web::ServiceConfig, rate_limit: &RateLimitCell) {
   cfg.service(

@@ -20,7 +20,8 @@ COPY . .
 # Debug mode build
 RUN --mount=type=cache,target=/app/target \
     if [ "$RUST_RELEASE_MODE" = "debug" ] ; then \
-      echo "Building Federation Service, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
+      echo "pub const VERSION: &str = \"$(git describe --tag --always)-$(git rev-parse --short HEAD)-sc\";" > "src/version.rs" \
+      && echo "Building Federation Service, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
       && cargo build --features ${CARGO_BUILD_FEATURES} \
       && cp ./target/$RUST_RELEASE_MODE/federation_service /app/federation_service; \
     fi
@@ -28,7 +29,8 @@ RUN --mount=type=cache,target=/app/target \
 # Release mode build
 RUN \
     if [ "$RUST_RELEASE_MODE" = "release" ] ; then \
-      echo "Building Federation Service, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
+      echo "pub const VERSION: &str = \"$(git describe --tag --always)-$(git rev-parse --short HEAD)-sc\";" > "src/version.rs" \
+      && echo "Building Federation Service, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
       && cargo build --features ${CARGO_BUILD_FEATURES} --release \
       && cp ./target/$RUST_RELEASE_MODE/federation_service /app/federation_service; \
     fi
