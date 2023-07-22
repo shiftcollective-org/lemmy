@@ -37,12 +37,14 @@ use lemmy_utils::{
   rate_limit::RateLimitCell,
   response::jsonify_plain_text_errors,
   settings::SETTINGS,
+  version::VERSION,
   SYNCHRONOUS_FEDERATION,
 };
 use reqwest::Client;
 use reqwest_middleware::ClientBuilder;
 use reqwest_tracing::TracingMiddleware;
-use std::{env, thread, time::Duration};
+use std::{env, time::Duration};
+use tokio::runtime::Builder;
 use tracing::subscriber::set_global_default;
 use tracing_actix_web::TracingLogger;
 use tracing_error::ErrorLayer;
@@ -60,7 +62,7 @@ use {
 pub(crate) const REQWEST_TIMEOUT: Duration = Duration::from_secs(10);
 
 /// Placing the main function in lib.rs allows other crates to import it and embed Lemmy
-pub async fn start_lemmy_server() -> Result<(), LemmyError> {
+pub async fn start_lemmy_scheduler() -> Result<(), LemmyError> {
   let args: Vec<String> = env::args().collect();
 
   let scheduled_tasks_enabled = args.get(1) != Some(&"--disable-scheduled-tasks".to_string());
@@ -76,6 +78,68 @@ pub async fn start_lemmy_server() -> Result<(), LemmyError> {
 
   // Run the Code-required migrations
   run_advanced_migrations(&mut (&pool).into(), &settings).await?;
+
+  // Initialize the secrets
+  let secret = Secret::init(&mut (&pool).into())
+    .await
+    .expect("Couldn't initialize secrets.");
+
+  // Make sure the local site is set up.
+  let site_view = SiteView::read_local(&mut (&pool).into())
+    .await
+    .expect("local site not set up");
+
+  // Set up the rate limiter
+  let rate_limit_config =
+    local_site_rate_limit_to_rate_limit_config(&site_view.local_site_rate_limit);
+  let rate_limit_cell = RateLimitCell::new(rate_limit_config).await;
+
+  let user_agent = build_user_agent(&settings);
+  let reqwest_client = Client::builder()
+    .user_agent(user_agent.clone())
+    .timeout(REQWEST_TIMEOUT)
+    .connect_timeout(REQWEST_TIMEOUT)
+    .build()?;
+
+  let client = ClientBuilder::new(reqwest_client.clone())
+    .with(TracingMiddleware::default())
+    .build();
+
+  let context = LemmyContext::create(
+    pool.clone(),
+    client.clone(),
+    secret.clone(),
+    rate_limit_cell.clone(),
+  );
+
+  if scheduled_tasks_enabled {
+    let rt = Builder::new_current_thread()
+      .enable_all()
+      .build()
+      .expect("Couldn't create Scheduled Tasks runtime");
+    let (_tx, rx) = tokio::sync::oneshot::channel::<()>();
+
+    // Schedules various cleanup tasks for the DB
+    rt.spawn(async move {
+      let context = context.clone();
+      move || {
+        scheduled_tasks::setup(db_url, user_agent, context)
+          .expect("Couldn't set up scheduled_tasks");
+      }
+    });
+
+    rx.await.expect("Scheduled taks failed");
+    drop(rt);
+  }
+
+  Ok(())
+}
+
+pub async fn start_lemmy_federation() -> Result<(), LemmyError> {
+  let settings = SETTINGS.to_owned();
+
+  // Set up the connection pool
+  let pool = build_db_pool(&settings).await?;
 
   // Initialize the secrets
   let secret = Secret::init(&mut (&pool).into())
@@ -102,10 +166,142 @@ pub async fn start_lemmy_server() -> Result<(), LemmyError> {
 
   println!(
     "Starting http server at {}:{}",
-    settings.bind, settings.port
+    settings.bind, settings.federation_port
   );
 
-  let user_agent = build_user_agent(&settings);
+  let user_agent = format!(
+    "LemmyApubService/{}; +{}",
+    VERSION,
+    settings.get_protocol_and_hostname()
+  );
+  let reqwest_client = Client::builder()
+    .user_agent(user_agent.clone())
+    .timeout(REQWEST_TIMEOUT)
+    .connect_timeout(REQWEST_TIMEOUT)
+    .build()?;
+
+  let client = ClientBuilder::new(reqwest_client.clone())
+    .with(TracingMiddleware::default())
+    .build();
+
+  let context = LemmyContext::create(
+    pool.clone(),
+    client.clone(),
+    secret.clone(),
+    rate_limit_cell.clone(),
+  );
+
+  #[cfg(feature = "prometheus-metrics")]
+  serve_prometheus(settings.prometheus.as_ref(), context.clone());
+
+  let settings_bind = settings.clone();
+
+  // this must come before the HttpServer creation
+  // creates a middleware that populates http metrics for each path, method, and status code
+  #[cfg(feature = "prometheus-metrics")]
+  let prom_api_metrics = PrometheusMetricsBuilder::new("lemmy_federation")
+    .registry(default_registry().clone())
+    .build()
+    .unwrap();
+
+  let federation_config = FederationConfig::builder()
+    .domain(settings.hostname.clone())
+    .app_data(context.clone())
+    .client(client.clone())
+    .http_fetch_limit(FEDERATION_HTTP_FETCH_LIMIT)
+    .worker_count(settings.worker_count)
+    .retry_count(settings.retry_count)
+    .debug(*SYNCHRONOUS_FEDERATION)
+    .http_signature_compat(true)
+    .url_verifier(Box::new(VerifyUrlData(context.inner_pool().clone())))
+    .build()
+    .await?;
+
+  // Create Http server with websocket support
+  HttpServer::new(move || {
+    let cors_origin = std::env::var("LEMMY_CORS_ORIGIN");
+    let cors_config = match (cors_origin, cfg!(debug_assertions)) {
+      (Ok(origin), false) => Cors::default()
+        .allowed_origin(&origin)
+        .allowed_origin(&settings.get_protocol_and_hostname()),
+      _ => Cors::default()
+        .allow_any_origin()
+        .allow_any_method()
+        .allow_any_header()
+        .expose_any_header()
+        .max_age(3600),
+    };
+
+    let app = App::new()
+      .wrap(middleware::Logger::new(
+        // This is the default log format save for the usage of %{r}a over %a to guarantee to record the client's (forwarded) IP and not the last peer address, since the latter is frequently just a reverse proxy
+        "%{r}a '%r' %s %b '%{Referer}i' '%{User-Agent}i' %T",
+      ))
+      .wrap(middleware::Compress::default())
+      .wrap(cors_config)
+      .wrap(TracingLogger::<QuieterRootSpanBuilder>::new())
+      .wrap(ErrorHandlers::new().default_handler(jsonify_plain_text_errors))
+      .app_data(Data::new(context.clone()))
+      .app_data(Data::new(rate_limit_cell.clone()))
+      .wrap(FederationMiddleware::new(federation_config.clone()));
+
+    #[cfg(feature = "prometheus-metrics")]
+    let app = app.wrap(prom_api_metrics.clone());
+
+    // The routes
+    app.configure(|cfg| {
+      if federation_enabled {
+        lemmy_apub::http::routes::config(cfg);
+        webfinger::config(cfg);
+      }
+    })
+  })
+  .bind((settings_bind.bind, settings_bind.federation_port))?
+  .run()
+  .await?;
+
+  Ok(())
+}
+
+pub async fn start_lemmy_api() -> Result<(), LemmyError> {
+  let settings = SETTINGS.to_owned();
+
+  // Set up the connection pool
+  let pool = build_db_pool(&settings).await?;
+
+  // Initialize the secrets
+  let secret = Secret::init(&mut (&pool).into())
+    .await
+    .expect("Couldn't initialize secrets.");
+
+  // Make sure the local site is set up.
+  let site_view = SiteView::read_local(&mut (&pool).into())
+    .await
+    .expect("local site not set up");
+  let local_site = site_view.local_site;
+  let federation_enabled = local_site.federation_enabled;
+
+  if federation_enabled {
+    println!("federation enabled, host is {}", &settings.hostname);
+  }
+
+  check_private_instance_and_federation_enabled(&local_site)?;
+
+  // Set up the rate limiter
+  let rate_limit_config =
+    local_site_rate_limit_to_rate_limit_config(&site_view.local_site_rate_limit);
+  let rate_limit_cell = RateLimitCell::new(rate_limit_config).await;
+
+  println!(
+    "Starting http server at {}:{}",
+    settings.bind, settings.api_port
+  );
+
+  let user_agent = format!(
+    "LemmyApubService/{}; +{}",
+    VERSION,
+    settings.get_protocol_and_hostname()
+  );
   let reqwest_client = Client::builder()
     .user_agent(user_agent.clone())
     .timeout(REQWEST_TIMEOUT)
@@ -128,21 +324,18 @@ pub async fn start_lemmy_server() -> Result<(), LemmyError> {
     rate_limit_cell.clone(),
   );
 
-  if scheduled_tasks_enabled {
-    // Schedules various cleanup tasks for the DB
-    thread::spawn({
-      let context = context.clone();
-      move || {
-        scheduled_tasks::setup(db_url, user_agent, context)
-          .expect("Couldn't set up scheduled_tasks");
-      }
-    });
-  }
-
   #[cfg(feature = "prometheus-metrics")]
   serve_prometheus(settings.prometheus.as_ref(), context.clone());
 
   let settings_bind = settings.clone();
+
+  // this must come before the HttpServer creation
+  // creates a middleware that populates http metrics for each path, method, and status code
+  #[cfg(feature = "prometheus-metrics")]
+  let prom_api_metrics = PrometheusMetricsBuilder::new("lemmy_api")
+    .registry(default_registry().clone())
+    .build()
+    .unwrap();
 
   let federation_config = FederationConfig::builder()
     .domain(settings.hostname.clone())
@@ -156,14 +349,6 @@ pub async fn start_lemmy_server() -> Result<(), LemmyError> {
     .url_verifier(Box::new(VerifyUrlData(context.inner_pool().clone())))
     .build()
     .await?;
-
-  // this must come before the HttpServer creation
-  // creates a middleware that populates http metrics for each path, method, and status code
-  #[cfg(feature = "prometheus-metrics")]
-  let prom_api_metrics = PrometheusMetricsBuilder::new("lemmy_api")
-    .registry(default_registry().clone())
-    .build()
-    .unwrap();
 
   // Create Http server with websocket support
   HttpServer::new(move || {
@@ -199,17 +384,11 @@ pub async fn start_lemmy_server() -> Result<(), LemmyError> {
     // The routes
     app
       .configure(|cfg| api_routes_http::config(cfg, rate_limit_cell))
-      .configure(|cfg| {
-        if federation_enabled {
-          lemmy_apub::http::routes::config(cfg);
-          webfinger::config(cfg);
-        }
-      })
       .configure(feeds::config)
       .configure(|cfg| images::config(cfg, pictrs_client.clone(), rate_limit_cell))
       .configure(nodeinfo::config)
   })
-  .bind((settings_bind.bind, settings_bind.port))?
+  .bind((settings_bind.bind, settings_bind.api_port))?
   .run()
   .await?;
 

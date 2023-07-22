@@ -1,0 +1,73 @@
+FROM rust:1.70-slim-buster AS builder
+
+# Install compilation dependencies
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends libssl-dev pkg-config libpq-dev git \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# comma-seperated list of features to enable
+ARG CARGO_BUILD_FEATURES=default
+
+# This can be set to release using --build-arg
+ARG RUST_RELEASE_MODE="debug"
+
+COPY . .
+
+# Build the shared lemmy library
+
+# Debug mode build
+RUN --mount=type=cache,target=/app/target \
+    if [ "$RUST_RELEASE_MODE" = "debug" ] ; then \
+      echo "pub const VERSION: &str = \"$(git describe --tag --always)-$(git rev-parse --short HEAD)-sc\";" > "crates/utils/src/version.rs" \
+      && echo "Building Lemmy Library $(git describe --tag --always)-$(git rev-parse --short HEAD)-sc, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
+      && cargo build --features ${CARGO_BUILD_FEATURES}; \
+    fi
+
+# Release mode build
+RUN --mount=type=cache,target=/app/target \
+    if [ "$RUST_RELEASE_MODE" = "release" ] ; then \
+      echo "pub const VERSION: &str = \"$(git describe --tag --always)-$(git rev-parse --short HEAD)-sc\";" > "crates/utils/src/version.rs" \
+      && echo "Building Lemmy Library $(git describe --tag --always)-$(git rev-parse --short HEAD)-sc, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
+      && cargo build --features ${CARGO_BUILD_FEATURES} --release; \
+    fi
+
+# Build the project
+
+# Debug mode build
+RUN --mount=type=cache,target=/app/target \
+    if [ "$RUST_RELEASE_MODE" = "debug" ] ; then \
+      cd services/federation_service \
+      && echo "Building Lemmy Federation, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
+      && cargo build && cd ../../ \
+      && cp ./target/$RUST_RELEASE_MODE/federation_service /app/federation_service; \
+    fi
+
+# Release mode build
+RUN --mount=type=cache,target=/app/target \
+    if [ "$RUST_RELEASE_MODE" = "release" ] ; then \
+      cd services/federation_service \
+      && echo "Building Lemmy Federation, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
+      && cargo build --release && cd ../../ \
+      && cp ./target/$RUST_RELEASE_MODE/federation_service /app/federation_service; \
+    fi
+
+# The Debian runner
+FROM debian:buster-slim AS runner
+
+# Install libpq for postgres
+RUN apt-get update \
+ && apt-get -y install --no-install-recommends postgresql-client libc6 libssl1.1 ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN addgroup --gid 1000 lemmy
+RUN useradd --no-create-home --shell /bin/sh --uid 1000 --gid 1000 lemmy
+
+# Copy resources
+COPY --chown=lemmy:lemmy --from=builder /app/federation_service /app/federation
+
+RUN chown lemmy:lemmy /app/federation
+USER lemmy
+
+CMD ["/app/federation"]

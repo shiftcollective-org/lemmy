@@ -412,6 +412,51 @@ dependencies = [
 ]
 
 [[package]]
+name = "api_service"
+version = "0.18.1"
+dependencies = [
+ "activitypub_federation",
+ "actix-cors",
+ "actix-web",
+ "actix-web-prom",
+ "chrono",
+ "clokwerk",
+ "console-subscriber",
+ "diesel",
+ "diesel-async",
+ "doku",
+ "futures-util",
+ "lemmy_api",
+ "lemmy_api_common",
+ "lemmy_api_crud",
+ "lemmy_apub",
+ "lemmy_db_schema",
+ "lemmy_routes",
+ "lemmy_server",
+ "lemmy_utils",
+ "opentelemetry 0.19.0",
+ "opentelemetry-otlp",
+ "pict-rs",
+ "prometheus",
+ "reqwest",
+ "reqwest-middleware",
+ "reqwest-tracing",
+ "rustls 0.21.3",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-postgres",
+ "tokio-postgres-rustls",
+ "tracing",
+ "tracing-actix-web",
+ "tracing-error",
+ "tracing-log",
+ "tracing-opentelemetry 0.19.0",
+ "tracing-subscriber",
+ "url",
+]
+
+[[package]]
 name = "argparse"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1841,6 +1886,51 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a7a407cfaa3385c4ae6b23e84623d48c2798d06e3e6a1878f7f59f17b3f86499"
 dependencies = [
  "instant",
+]
+
+[[package]]
+name = "federation_service"
+version = "0.18.1"
+dependencies = [
+ "activitypub_federation",
+ "actix-cors",
+ "actix-web",
+ "actix-web-prom",
+ "chrono",
+ "clokwerk",
+ "console-subscriber",
+ "diesel",
+ "diesel-async",
+ "doku",
+ "futures-util",
+ "lemmy_api",
+ "lemmy_api_common",
+ "lemmy_api_crud",
+ "lemmy_apub",
+ "lemmy_db_schema",
+ "lemmy_routes",
+ "lemmy_server",
+ "lemmy_utils",
+ "opentelemetry 0.19.0",
+ "opentelemetry-otlp",
+ "pict-rs",
+ "prometheus",
+ "reqwest",
+ "reqwest-middleware",
+ "reqwest-tracing",
+ "rustls 0.21.3",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-postgres",
+ "tokio-postgres-rustls",
+ "tracing",
+ "tracing-actix-web",
+ "tracing-error",
+ "tracing-log",
+ "tracing-opentelemetry 0.19.0",
+ "tracing-subscriber",
+ "url",
 ]
 
 [[package]]
@@ -4660,6 +4750,51 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cbc66816425a074528352f5789333ecff06ca41b36b0b0efdfbb29edc391a19"
 dependencies = [
  "parking_lot 0.12.1",
+]
+
+[[package]]
+name = "scheduler_service"
+version = "0.18.1"
+dependencies = [
+ "activitypub_federation",
+ "actix-cors",
+ "actix-web",
+ "actix-web-prom",
+ "chrono",
+ "clokwerk",
+ "console-subscriber",
+ "diesel",
+ "diesel-async",
+ "doku",
+ "futures-util",
+ "lemmy_api",
+ "lemmy_api_common",
+ "lemmy_api_crud",
+ "lemmy_apub",
+ "lemmy_db_schema",
+ "lemmy_routes",
+ "lemmy_server",
+ "lemmy_utils",
+ "opentelemetry 0.19.0",
+ "opentelemetry-otlp",
+ "pict-rs",
+ "prometheus",
+ "reqwest",
+ "reqwest-middleware",
+ "reqwest-tracing",
+ "rustls 0.21.3",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-postgres",
+ "tokio-postgres-rustls",
+ "tracing",
+ "tracing-actix-web",
+ "tracing-error",
+ "tracing-log",
+ "tracing-opentelemetry 0.19.0",
+ "tracing-subscriber",
+ "url",
 ]
 
 [[package]]

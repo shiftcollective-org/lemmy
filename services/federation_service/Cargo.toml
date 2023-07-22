@@ -1,0 +1,52 @@
+[package]
+name = "federation_service"
+version.workspace = true
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+lemmy_server = { version = "=0.18.1", path = "../../" }
+lemmy_api = { workspace = true }
+lemmy_api_crud = { workspace = true }
+lemmy_apub = { workspace = true }
+lemmy_utils = { workspace = true }
+lemmy_db_schema = { workspace = true }
+lemmy_api_common = { workspace = true }
+lemmy_routes = { workspace = true }
+activitypub_federation = { workspace = true }
+diesel = { workspace = true }
+diesel-async = { workspace = true }
+serde = { workspace = true }
+actix-web = { workspace = true }
+tracing = { workspace = true }
+tracing-actix-web = { workspace = true }
+tracing-error = { workspace = true }
+tracing-log = { workspace = true }
+tracing-subscriber = { workspace = true }
+url = { workspace = true }
+reqwest = { workspace = true }
+reqwest-middleware = { workspace = true }
+reqwest-tracing = { workspace = true }
+clokwerk = { workspace = true }
+doku = { workspace = true }
+serde_json = { workspace = true }
+tracing-opentelemetry = { workspace = true, optional = true }
+opentelemetry = { workspace = true, optional = true }
+console-subscriber = { workspace = true, optional = true }
+opentelemetry-otlp = { workspace = true, optional = true }
+pict-rs = { workspace = true, optional = true }
+tokio.workspace = true
+actix-cors = { workspace = true }
+rustls = { workspace = true }
+futures-util = { workspace = true }
+tokio-postgres = { workspace = true }
+tokio-postgres-rustls = { workspace = true }
+chrono = { workspace = true }
+prometheus = { workspace = true, optional = true }
+actix-web-prom = { workspace = true, optional = true }

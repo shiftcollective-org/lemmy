@@ -29,9 +29,12 @@ pub struct Settings {
   #[default(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)))]
   #[doku(as = "String")]
   pub bind: IpAddr,
-  /// Port where lemmy should listen for incoming requests
+  /// Port where lemmy api should listen for incoming requests
   #[default(8536)]
-  pub port: u16,
+  pub api_port: u16,
+  /// Port where lemmy federation should listen for incoming requests
+  #[default(8537)]
+  pub federation_port: u16,
   /// Whether the site is available over TLS. Needs to be true for federation to work.
   #[default(true)]
   pub tls_enabled: bool,
