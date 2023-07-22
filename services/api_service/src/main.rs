@@ -9,7 +9,7 @@ use actix_web::{
   App,
   HttpServer,
 };
-use api_service::{init_logging, routes, VerifyUrlData, FEDERATION_HTTP_FETCH_LIMIT, version::VERSION};
+use api_service::{init_logging, routes, VerifyUrlData, FEDERATION_HTTP_FETCH_LIMIT, nodeinfo};
 use lemmy_api_common::{
   context::LemmyContext,
   utils::{
@@ -19,6 +19,7 @@ use lemmy_api_common::{
 };
 use lemmy_db_schema::{source::secret::Secret, utils::build_db_pool};
 use lemmy_db_views::structs::SiteView;
+use lemmy_routes::{feeds, images};
 use lemmy_utils::{
   error::LemmyError,
   rate_limit::RateLimitCell,
@@ -27,6 +28,7 @@ use lemmy_utils::{
   REQWEST_TIMEOUT,
   SYNCHRONOUS_FEDERATION,
 };
+use lemmy_version::version::VERSION;
 use reqwest::Client;
 use reqwest_middleware::ClientBuilder;
 use reqwest_tracing::TracingMiddleware;
@@ -85,6 +87,11 @@ pub async fn main() -> Result<(), LemmyError> {
     .with(TracingMiddleware::default())
     .build();
 
+  // Pictrs cannot use the retry middleware
+  let pictrs_client = ClientBuilder::new(reqwest_client.clone())
+    .with(TracingMiddleware::default())
+    .build();
+
   let context = LemmyContext::create(
     pool.clone(),
     client.clone(),
@@ -137,6 +144,9 @@ pub async fn main() -> Result<(), LemmyError> {
 
     // The routes
     app.configure(|cfg| routes::config(cfg, rate_limit_cell))
+    .configure(feeds::config)
+    .configure(|cfg| images::config(cfg, pictrs_client.clone(), rate_limit_cell))
+    .configure(nodeinfo::config)
   })
   .bind((settings_bind.bind, settings_bind.api_service_port))?
   .run()

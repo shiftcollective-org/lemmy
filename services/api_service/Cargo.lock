@@ -238,6 +238,7 @@ dependencies = [
  "bytes",
  "bytestring",
  "cfg-if",
+ "cookie",
  "derive_more",
  "encoding_rs",
  "futures-core",
@@ -269,6 +270,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "actix-web-prom"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9df3127d20a5d01c9fc9aceb969a38d31a6767e1b48a54d55a8f56c769a84923"
+dependencies = [
+ "actix-web",
+ "futures-core",
+ "pin-project-lite",
+ "prometheus",
 ]
 
 [[package]]
@@ -364,9 +377,13 @@ dependencies = [
  "activitypub_federation",
  "actix-cors",
  "actix-web",
+ "actix-web-prom",
  "anyhow",
  "assert-json-diff",
  "async-trait",
+ "base64 0.21.2",
+ "bcrypt",
+ "captcha",
  "chrono",
  "console-subscriber",
  "diesel",
@@ -381,11 +398,15 @@ dependencies = [
  "lemmy_db_schema",
  "lemmy_db_views",
  "lemmy_db_views_actor",
+ "lemmy_db_views_moderator",
+ "lemmy_routes",
  "lemmy_utils",
+ "lemmy_version",
  "moka",
  "once_cell",
  "opentelemetry 0.19.0",
  "opentelemetry-otlp",
+ "prometheus",
  "reqwest",
  "reqwest-middleware",
  "reqwest-tracing",
@@ -443,7 +464,7 @@ dependencies = [
  "log",
  "parking",
  "polling",
- "rustix",
+ "rustix 0.37.23",
  "slab",
  "socket2 0.4.9",
  "waker-fn",
@@ -489,6 +510,19 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.26",
+]
+
+[[package]]
+name = "atom_syndication"
+version = "0.12.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ca96cb38e3d8236f1573a84bbc55e130bd1ae07df770e36d0cf221ea7a50e36c"
+dependencies = [
+ "chrono",
+ "derive_builder",
+ "diligent-date-parser",
+ "never",
+ "quick-xml 0.28.2",
 ]
 
 [[package]]
@@ -901,6 +935,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
+name = "cookie"
+version = "0.16.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e859cd57d0710d9e06c381b550c06e76992472a8c6d527aecd2fc673dcc231fb"
+dependencies = [
+ "percent-encoding",
+ "time 0.3.23",
+ "version_check",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1288,6 +1333,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "diligent-date-parser"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6cf7fe294274a222363f84bcb63cdea762979a0443b4cf1f4f8fd17c86b1182"
+dependencies = [
+ "chrono",
+]
+
+[[package]]
 name = "displaydoc"
 version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1493,7 +1547,7 @@ checksum = "4bcfec3a70f97c962c307b2d2c56e358cf1d00b558d74262b5f929ee8cc7e73a"
 dependencies = [
  "errno-dragonfly",
  "libc",
- "windows-sys",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -2155,7 +2209,7 @@ checksum = "eae7b9aee968036d54dce06cebaefd919e4472e753296daccd6d344e3e2df0c2"
 dependencies = [
  "hermit-abi",
  "libc",
- "windows-sys",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -2255,7 +2309,6 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 [[package]]
 name = "lemmy_api"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2270,7 +2323,10 @@ dependencies = [
  "lemmy_db_views_actor",
  "lemmy_db_views_moderator",
  "lemmy_utils",
+ "lemmy_version",
  "serde",
+ "serial_test",
+ "tokio",
  "tracing",
  "uuid",
  "wav",
@@ -2279,7 +2335,7 @@ dependencies = [
 [[package]]
 name = "lemmy_api_common"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#bc91d2ed62816d947ad2bec37a4ca57f044c0b0a"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2310,7 +2366,6 @@ dependencies = [
 [[package]]
 name = "lemmy_api_crud"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
 dependencies = [
  "activitypub_federation",
  "actix-web",
@@ -2322,6 +2377,7 @@ dependencies = [
  "lemmy_db_views",
  "lemmy_db_views_actor",
  "lemmy_utils",
+ "lemmy_version",
  "serde",
  "tracing",
  "url",
@@ -2332,7 +2388,7 @@ dependencies = [
 [[package]]
 name = "lemmy_db_schema"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#bc91d2ed62816d947ad2bec37a4ca57f044c0b0a"
 dependencies = [
  "activitypub_federation",
  "async-trait",
@@ -2369,7 +2425,7 @@ dependencies = [
 [[package]]
 name = "lemmy_db_views"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#bc91d2ed62816d947ad2bec37a4ca57f044c0b0a"
 dependencies = [
  "diesel",
  "diesel-async",
@@ -2385,7 +2441,7 @@ dependencies = [
 [[package]]
 name = "lemmy_db_views_actor"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#bc91d2ed62816d947ad2bec37a4ca57f044c0b0a"
 dependencies = [
  "diesel",
  "diesel-async",
@@ -2399,7 +2455,7 @@ dependencies = [
 [[package]]
 name = "lemmy_db_views_moderator"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#bc91d2ed62816d947ad2bec37a4ca57f044c0b0a"
 dependencies = [
  "diesel",
  "diesel-async",
@@ -2410,9 +2466,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "lemmy_routes"
+version = "0.18.1"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#bc91d2ed62816d947ad2bec37a4ca57f044c0b0a"
+dependencies = [
+ "activitypub_federation",
+ "actix-web",
+ "anyhow",
+ "chrono",
+ "futures",
+ "lemmy_api_common",
+ "lemmy_db_schema",
+ "lemmy_db_views",
+ "lemmy_db_views_actor",
+ "lemmy_utils",
+ "once_cell",
+ "reqwest",
+ "reqwest-middleware",
+ "rss",
+ "serde",
+ "strum",
+ "tokio",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "lemmy_utils"
 version = "0.18.1"
-source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#ba45029490224c2334e766394cb91b4946879f5c"
+source = "git+https://github.com/shiftcollective-org/lemmy.git?branch=break-api-and-federation-out-of-lemmy#bc91d2ed62816d947ad2bec37a4ca57f044c0b0a"
 dependencies = [
  "actix-web",
  "anyhow",
@@ -2448,6 +2530,10 @@ dependencies = [
  "url",
  "uuid",
 ]
+
+[[package]]
+name = "lemmy_version"
+version = "0.18.1"
 
 [[package]]
 name = "lettre"
@@ -2517,6 +2603,12 @@ checksum = "f1dfa36d52c581e9ec783a7ce2a5e0143da6237be5811a0b3153fedfdbe9f780"
 dependencies = [
  "memchr",
 ]
+
+[[package]]
+name = "linux-raw-sys"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f051f77a7c8e6957c0696eac88f26b0117e54f52d3fc682ab19397a8812846a4"
 
 [[package]]
 name = "linux-raw-sys"
@@ -2779,7 +2871,7 @@ dependencies = [
  "libc",
  "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
- "windows-sys",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -2824,6 +2916,12 @@ dependencies = [
  "security-framework-sys",
  "tempfile",
 ]
+
+[[package]]
+name = "never"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c96aba5aa877601bb3f6dd6a63a969e1f82e60646e81e71b14496995e9853c91"
 
 [[package]]
 name = "new_debug_unreachable"
@@ -3102,7 +3200,7 @@ dependencies = [
  "libc",
  "redox_syscall",
  "smallvec",
- "windows-targets",
+ "windows-targets 0.48.1",
 ]
 
 [[package]]
@@ -3267,7 +3365,7 @@ dependencies = [
  "base64 0.21.2",
  "indexmap 1.9.3",
  "line-wrap",
- "quick-xml",
+ "quick-xml 0.29.0",
  "serde",
  "time 0.3.23",
 ]
@@ -3298,7 +3396,7 @@ dependencies = [
  "libc",
  "log",
  "pin-project-lite",
- "windows-sys",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -3361,6 +3459,36 @@ dependencies = [
 ]
 
 [[package]]
+name = "procfs"
+version = "0.14.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1de8dacb0873f77e6aefc6d71e044761fcc68060290f5b1089fcdf84626bb69"
+dependencies = [
+ "bitflags 1.3.2",
+ "byteorder",
+ "hex",
+ "lazy_static",
+ "rustix 0.36.15",
+]
+
+[[package]]
+name = "prometheus"
+version = "0.13.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "449811d15fbdf5ceb5c1144416066429cf82316e2ec8ce0c1f6f8a02e7bbcf8c"
+dependencies = [
+ "cfg-if",
+ "fnv",
+ "lazy_static",
+ "libc",
+ "memchr",
+ "parking_lot",
+ "procfs",
+ "protobuf",
+ "thiserror",
+]
+
+[[package]]
 name = "prost"
 version = "0.11.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3391,6 +3519,12 @@ checksum = "213622a1460818959ac1181aaeb2dc9c7f63df720db7d788b3e24eacd1983e13"
 dependencies = [
  "prost",
 ]
+
+[[package]]
+name = "protobuf"
+version = "2.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "106dd99e98437432fed6519dedecfade6a06a73bb7b2a1e019fdd2bee5778d94"
 
 [[package]]
 name = "psm"
@@ -3426,6 +3560,16 @@ dependencies = [
  "wasi 0.11.0+wasi-snapshot-preview1",
  "web-sys",
  "winapi",
+]
+
+[[package]]
+name = "quick-xml"
+version = "0.28.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ce5e73202a820a31f8a0ee32ada5e21029c81fd9e3ebf668a40832e4219d9d1"
+dependencies = [
+ "encoding_rs",
+ "memchr",
 ]
 
 [[package]]
@@ -3742,6 +3886,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f8c01b9158de3aa5a7ac041a41c0e854d7adc3e473e7d7e2143eb5432bc5ba2"
 
 [[package]]
+name = "rss"
+version = "2.0.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9acf62e0f3f4b52f61d3a12d6279e3f0b90d4811b0ae888eabdf61a2e7c03a95"
+dependencies = [
+ "atom_syndication",
+ "derive_builder",
+ "never",
+ "quick-xml 0.28.2",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3758,6 +3914,20 @@ dependencies = [
 
 [[package]]
 name = "rustix"
+version = "0.36.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c37f1bd5ef1b5422177b7646cba67430579cfe2ace80f284fee876bca52ad941"
+dependencies = [
+ "bitflags 1.3.2",
+ "errno",
+ "io-lifetimes",
+ "libc",
+ "linux-raw-sys 0.1.4",
+ "windows-sys 0.45.0",
+]
+
+[[package]]
+name = "rustix"
 version = "0.37.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4d69718bf81c6127a49dc64e44a742e8bb9213c0ff8869a22c308f84c1d4ab06"
@@ -3766,8 +3936,8 @@ dependencies = [
  "errno",
  "io-lifetimes",
  "libc",
- "linux-raw-sys",
- "windows-sys",
+ "linux-raw-sys 0.3.8",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -3837,7 +4007,7 @@ version = "0.1.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c3733bf4cf7ea0880754e19cb5a462007c4a8c1914bff372ccc95b464f1df88"
 dependencies = [
- "windows-sys",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -4146,7 +4316,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2538b18701741680e0322a2302176d3253a35388e2e62f172f64f4f16605f877"
 dependencies = [
  "libc",
- "windows-sys",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -4323,8 +4493,8 @@ dependencies = [
  "cfg-if",
  "fastrand",
  "redox_syscall",
- "rustix",
- "windows-sys",
+ "rustix 0.37.23",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -4454,7 +4624,7 @@ dependencies = [
  "socket2 0.4.9",
  "tokio-macros",
  "tracing",
- "windows-sys",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -5247,7 +5417,16 @@ version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e686886bc078bc1b0b600cac0147aadb815089b6e4da64016cbd754b6342700f"
 dependencies = [
- "windows-targets",
+ "windows-targets 0.48.1",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.45.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "75283be5efb2831d37ea142365f009c02ec203cd29a3ebecbc093d52315b66d0"
+dependencies = [
+ "windows-targets 0.42.2",
 ]
 
 [[package]]
@@ -5256,7 +5435,22 @@ version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "677d2418bec65e3338edb076e806bc1ec15693c5d0104683f2efe857f61056a9"
 dependencies = [
- "windows-targets",
+ "windows-targets 0.48.1",
+]
+
+[[package]]
+name = "windows-targets"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e5180c00cd44c9b1c88adb3693291f1cd93605ded80c250a75d472756b4d071"
+dependencies = [
+ "windows_aarch64_gnullvm 0.42.2",
+ "windows_aarch64_msvc 0.42.2",
+ "windows_i686_gnu 0.42.2",
+ "windows_i686_msvc 0.42.2",
+ "windows_x86_64_gnu 0.42.2",
+ "windows_x86_64_gnullvm 0.42.2",
+ "windows_x86_64_msvc 0.42.2",
 ]
 
 [[package]]
@@ -5265,14 +5459,20 @@ version = "0.48.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05d4b17490f70499f20b9e791dcf6a299785ce8af4d709018206dc5b4953e95f"
 dependencies = [
- "windows_aarch64_gnullvm",
- "windows_aarch64_msvc",
- "windows_i686_gnu",
- "windows_i686_msvc",
- "windows_x86_64_gnu",
- "windows_x86_64_gnullvm",
- "windows_x86_64_msvc",
+ "windows_aarch64_gnullvm 0.48.0",
+ "windows_aarch64_msvc 0.48.0",
+ "windows_i686_gnu 0.48.0",
+ "windows_i686_msvc 0.48.0",
+ "windows_x86_64_gnu 0.48.0",
+ "windows_x86_64_gnullvm 0.48.0",
+ "windows_x86_64_msvc 0.48.0",
 ]
+
+[[package]]
+name = "windows_aarch64_gnullvm"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "597a5118570b68bc08d8d59125332c54f1ba9d9adeedeef5b99b02ba2b0698f8"
 
 [[package]]
 name = "windows_aarch64_gnullvm"
@@ -5282,9 +5482,21 @@ checksum = "91ae572e1b79dba883e0d315474df7305d12f569b400fcf90581b06062f7e1bc"
 
 [[package]]
 name = "windows_aarch64_msvc"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e08e8864a60f06ef0d0ff4ba04124db8b0fb3be5776a5cd47641e942e58c4d43"
+
+[[package]]
+name = "windows_aarch64_msvc"
 version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b2ef27e0d7bdfcfc7b868b317c1d32c641a6fe4629c171b8928c7b08d98d7cf3"
+
+[[package]]
+name = "windows_i686_gnu"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c61d927d8da41da96a81f029489353e68739737d3beca43145c8afec9a31a84f"
 
 [[package]]
 name = "windows_i686_gnu"
@@ -5294,9 +5506,21 @@ checksum = "622a1962a7db830d6fd0a69683c80a18fda201879f0f447f065a3b7467daa241"
 
 [[package]]
 name = "windows_i686_msvc"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44d840b6ec649f480a41c8d80f9c65108b92d89345dd94027bfe06ac444d1060"
+
+[[package]]
+name = "windows_i686_msvc"
 version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4542c6e364ce21bf45d69fdd2a8e455fa38d316158cfd43b3ac1c5b1b19f8e00"
+
+[[package]]
+name = "windows_x86_64_gnu"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8de912b8b8feb55c064867cf047dda097f92d51efad5b491dfb98f6bbb70cb36"
 
 [[package]]
 name = "windows_x86_64_gnu"
@@ -5306,9 +5530,21 @@ checksum = "ca2b8a661f7628cbd23440e50b05d705db3686f894fc9580820623656af974b1"
 
 [[package]]
 name = "windows_x86_64_gnullvm"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "26d41b46a36d453748aedef1486d5c7a85db22e56aff34643984ea85514e94a3"
+
+[[package]]
+name = "windows_x86_64_gnullvm"
 version = "0.48.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7896dbc1f41e08872e9d5e8f8baa8fdd2677f29468c4e156210174edc7f7b953"
+
+[[package]]
+name = "windows_x86_64_msvc"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9aec5da331524158c6d1a4ac0ab1541149c0b9505fde06423b02f5ef0106b9f0"
 
 [[package]]
 name = "windows_x86_64_msvc"

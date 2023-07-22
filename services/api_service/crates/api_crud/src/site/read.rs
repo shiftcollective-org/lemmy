@@ -25,8 +25,8 @@ use lemmy_db_views_actor::structs::{
 use lemmy_utils::{
   claims::Claims,
   error::{LemmyError, LemmyErrorExt, LemmyErrorType},
-  version,
 };
+use lemmy_version::version::VERSION;
 
 #[async_trait::async_trait(?Send)]
 impl PerformCrud for GetSite {
@@ -90,7 +90,7 @@ impl PerformCrud for GetSite {
     Ok(GetSiteResponse {
       site_view,
       admins,
-      version: version::VERSION.to_string(),
+      version: VERSION.to_string(),
       my_user,
       all_languages,
       discussion_languages,

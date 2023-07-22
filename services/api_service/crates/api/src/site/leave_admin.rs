@@ -17,10 +17,8 @@ use lemmy_db_schema::{
 };
 use lemmy_db_views::structs::{CustomEmojiView, SiteView};
 use lemmy_db_views_actor::structs::PersonView;
-use lemmy_utils::{
-  error::{LemmyError, LemmyErrorType},
-  version,
-};
+use lemmy_utils::error::{LemmyError, LemmyErrorType};
+use lemmy_version::version::VERSION;
 
 #[async_trait::async_trait(?Send)]
 impl Perform for LeaveAdmin {
@@ -69,7 +67,7 @@ impl Perform for LeaveAdmin {
     Ok(GetSiteResponse {
       site_view,
       admins,
-      version: version::VERSION.to_string(),
+      version: VERSION.to_string(),
       my_user: None,
       all_languages,
       discussion_languages,

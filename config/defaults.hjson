@@ -72,8 +72,6 @@
   hostname: "unset"
   # Address where lemmy should listen for incoming requests
   bind: "0.0.0.0"
-  # Port where lemmy should listen for incoming requests
-  port: 8536
   # Port where lemmy federation service should listen for incoming requests
   federation_service_port: 8537
   # Port where lemmy api service should listen for incoming requests

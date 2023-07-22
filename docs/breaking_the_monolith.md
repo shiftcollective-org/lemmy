@@ -8,6 +8,11 @@ See docker/docker-compose.yml and docker/nginx.conf for how to setup.
 
 - Contains all the routes previously from src/api_routes_http.rs (all routes starting with /api)
 - Exposes API endpoints for the Lemmy-UI frontend and any other clients
+- Exposes RSS/Atom feeds
+- Handles nodeinfo endpoint for discovery.
+  - Contains routes from services/api_service/src/nodeinfo.rs
+- Proxies image requests to pictrs (crates/routes/src/images.rs)
+  - Handle routes /image
 
 ### Federation Service (port 8537 by default)
 
@@ -50,14 +55,12 @@ See docker/docker-compose.yml and docker/nginx.conf for how to setup.
     - /inbox
     - /site_inbox
 
-### Lemmy (port 8536 by default)
+- Handles webfinger endpoint
+  - Handle route:
+    - .well-known/webfinger
 
-- Contains the routes from crates/routes/src/feeds.rs
-- Exposes RSS/Atom feeds
-- Handles webfinger and nodeinfo endpoints for discovery.
-  - Contains routes from crates/routes/src/webfinger.rs and crates/routes/src/nodeinfo.rs
-- Proxies image requests to pictrs (crates/routes/src/images.rs)
-  - Handle routes /image
+### Lemmy
+
 - Handles Scheduled Tasks
 - Handles DB Migrations
 

@@ -26,12 +26,12 @@ pub(crate) mod activity_lists;
 pub mod api;
 pub(crate) mod collections;
 pub mod fetcher;
-pub mod version;
 // pub mod http;
 pub(crate) mod mentions;
 pub mod objects;
 pub mod protocol;
 pub mod routes;
+pub mod nodeinfo;
 
 pub const FEDERATION_HTTP_FETCH_LIMIT: u32 = 50;
 /// All incoming and outgoing federation actions read the blocklist/allowlist and slur filters

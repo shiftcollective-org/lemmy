@@ -13,7 +13,6 @@ pub mod error;
 pub mod request;
 pub mod response;
 pub mod utils;
-pub mod version;
 
 use error::LemmyError;
 use futures::Future;

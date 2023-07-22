@@ -24,7 +24,8 @@ pub mod http;
 pub(crate) mod mentions;
 pub mod objects;
 pub mod protocol;
-pub mod version;
+#[cfg(feature = "prometheus-metrics")]
+pub mod prometheus_metrics;
 
 pub const FEDERATION_HTTP_FETCH_LIMIT: u32 = 50;
 /// All incoming and outgoing federation actions read the blocklist/allowlist and slur filters
