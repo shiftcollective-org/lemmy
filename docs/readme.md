@@ -21,6 +21,10 @@ Run Rust unit tests:
 ./scripts/test.sh
 ```
 
+## Running on Kubernetes
+
+See <https://github.com/shiftcollective-org/lemmy-k3s-hetzner>
+
 ## Components
 
 ### Lemmy Api (port 8536 by default)

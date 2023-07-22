@@ -27,7 +27,8 @@ services:
 
   lemmy-scheduler:
     # use "image" to pull down an already compiled lemmy scheduler. make sure to comment out "build".
-    # image: ghcr.io/ubergeek77/lemmy:0.18.1
+    # Note: The pre-compiled image is arm64 (aarch64) compatible, if you need a different architecture, uncomment "build" and build from source.
+    # image: alexandrupero/lemmy-scheduler:0.18.1-rc.10-55-g42f402016-arm64
 
     # use "build" to build your local lemmy scheduler image for development. make sure to comment out "image".
     build:
@@ -51,7 +52,8 @@ services:
 
   lemmy-api:
     # use "image" to pull down an already compiled lemmy api. make sure to comment out "build".
-    # image: ghcr.io/ubergeek77/lemmy:0.18.1
+    # Note: The pre-compiled image is arm64 (aarch64) compatible, if you need a different architecture, uncomment "build" and build from source.
+    # image: alexandrupero/lemmy-api:0.18.1-rc.10-55-g42f402016-arm64
 
     # use "build" to build your local lemmy api image for development. make sure to comment out "image".
     build:
@@ -79,7 +81,8 @@ services:
 
   lemmy-federation:
     # use "image" to pull down an already compiled lemmy federation. make sure to comment out "build".
-    # image: ghcr.io/ubergeek77/lemmy:0.18.1
+    # Note: The pre-compiled image is arm64 (aarch64) compatible, if you need a different architecture, uncomment "build" and build from source.
+    # image: alexandrupero/lemmy-federation:0.18.1-rc.10-55-g42f402016-arm64
 
     # use "build" to build your local lemmy federation image for development. make sure to comment out "image".
     build:
@@ -107,7 +110,7 @@ services:
 
   lemmy-ui:
     # use "image" to pull down an already compiled lemmy-ui. make sure to comment out "build".
-    image: ghcr.io/ubergeek77/lemmy-ui:0.18.1
+    image: ghcr.io/ubergeek77/lemmy-ui:0.18.1-rc.10
     # use "build" to build your local lemmy ui image for development. make sure to comment out "image".
     # run: docker compose up --build
 

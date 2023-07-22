@@ -20,16 +20,16 @@ COPY . .
 # Debug mode build
 RUN --mount=type=cache,target=/app/target \
     if [ "$RUST_RELEASE_MODE" = "debug" ] ; then \
-      echo "pub const VERSION: &str = \"$(git describe --tag --always)-$(git rev-parse --short HEAD)-sc\";" > "crates/utils/src/version.rs" \
-      && echo "Building Lemmy Library $(git describe --tag --always)-$(git rev-parse --short HEAD)-sc, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
+      echo "pub const VERSION: &str = \"$(git describe --tag --always)\";" > "crates/utils/src/version.rs" \
+      && echo "Building Lemmy Library $(git describe --tag --always), Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
       && cargo build --features ${CARGO_BUILD_FEATURES}; \
     fi
 
 # Release mode build
 RUN --mount=type=cache,target=/app/target \
     if [ "$RUST_RELEASE_MODE" = "release" ] ; then \
-      echo "pub const VERSION: &str = \"$(git describe --tag --always)-$(git rev-parse --short HEAD)-sc\";" > "crates/utils/src/version.rs" \
-      && echo "Building Lemmy Library $(git describe --tag --always)-$(git rev-parse --short HEAD)-sc, Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
+      echo "pub const VERSION: &str = \"$(git describe --tag --always)\";" > "crates/utils/src/version.rs" \
+      && echo "Building Lemmy Library $(git describe --tag --always), Cargo Target: $(rustc -vV | sed -n 's|host: ||p'), Mode: $RUST_RELEASE_MODE" \
       && cargo build --features ${CARGO_BUILD_FEATURES} --release; \
     fi
 
