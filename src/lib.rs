@@ -49,7 +49,6 @@ use reqwest::Client;
 use reqwest_middleware::ClientBuilder;
 use reqwest_tracing::TracingMiddleware;
 use std::{env, time::Duration};
-use tokio::runtime::Builder;
 use tracing::subscriber::set_global_default;
 use tracing_actix_web::TracingLogger;
 use tracing_error::ErrorLayer;
@@ -118,23 +117,16 @@ pub async fn start_lemmy_scheduler() -> Result<(), LemmyError> {
   );
 
   if scheduled_tasks_enabled {
-    let rt = Builder::new_current_thread()
-      .enable_all()
-      .build()
-      .expect("Couldn't create Scheduled Tasks runtime");
-    let (_tx, rx) = tokio::sync::oneshot::channel::<()>();
-
     // Schedules various cleanup tasks for the DB
-    rt.spawn(async move {
+    tokio::spawn(async move {
       let context = context.clone();
       move || {
         scheduled_tasks::setup(db_url, user_agent, context)
           .expect("Couldn't set up scheduled_tasks");
       }
-    });
-
-    rx.await.expect("Scheduled taks failed");
-    drop(rt);
+    })
+    .await
+    .expect("Scheduled tasks thread panicked")();
   }
 
   Ok(())
