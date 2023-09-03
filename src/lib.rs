@@ -123,15 +123,9 @@ pub async fn start_lemmy_scheduler() -> Result<(), LemmyError> {
 
   if scheduled_tasks_enabled {
     // Schedules various cleanup tasks for the DB
-    tokio::spawn(async move {
-      let context = context.clone();
-      move || {
-        scheduled_tasks::setup(db_url, user_agent, context)
-          .expect("Couldn't set up scheduled_tasks");
-      }
-    })
-    .await
-    .expect("Scheduled tasks thread panicked")();
+    scheduled_tasks::setup(db_url, user_agent, context)
+      .await
+      .expect("Scheduled tasks thread panicked");
   }
 
   Ok(())
