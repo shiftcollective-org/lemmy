@@ -178,5 +178,6 @@ tokio-postgres-rustls = { workspace = true }
 chrono = { workspace = true }
 prometheus = { workspace = true, optional = true }
 actix-web-prom = { workspace = true, optional = true }
+serial_test = { workspace = true }
 clap = { workspace = true }
 lemmy_federate = { workspace = true }
