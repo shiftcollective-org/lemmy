@@ -50,3 +50,4 @@ tokio-postgres-rustls = { workspace = true }
 chrono = { workspace = true }
 prometheus = { workspace = true, optional = true }
 actix-web-prom = { workspace = true, optional = true }
+clap = { workspace = true }
