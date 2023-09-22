@@ -525,6 +525,7 @@ fn create_http_api_server(
       .wrap(ErrorHandlers::new().default_handler(jsonify_plain_text_errors))
       .app_data(Data::new(context.clone()))
       .app_data(Data::new(rate_limit_cell.clone()))
+      .wrap(FederationMiddleware::new(federation_config.clone()))
       .wrap(SessionMiddleware::new(context.clone()));
 
     #[cfg(feature = "prometheus-metrics")]
