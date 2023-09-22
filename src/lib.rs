@@ -163,7 +163,9 @@ pub async fn start_lemmy_scheduler(args: CmdArgs) -> Result<(), LemmyError> {
 
   if scheduled_tasks_enabled {
     // Schedules various cleanup tasks for the DB
-    let _scheduled_tasks = tokio::task::spawn(scheduled_tasks::setup(context.clone()));
+    scheduled_tasks::setup(context)
+      .await
+      .expect("Scheduled tasks thread panicked");
   }
 
   Ok(())
@@ -304,7 +306,6 @@ pub async fn start_lemmy_api(args: CmdArgs) -> Result<(), LemmyError> {
   let site_view = SiteView::read_local(&mut (&pool).into())
     .await
     .expect("local site not set up");
-  let local_site = site_view.local_site;
 
   // Set up the rate limiter
   let rate_limit_config =
@@ -467,13 +468,12 @@ fn create_http_federation_server(
     let app = app.wrap(prom_api_metrics.clone());
 
     // The routes
-    app
-      .configure(|cfg| {
-        if federation_enabled {
-          lemmy_apub::http::routes::config(cfg);
-          webfinger::config(cfg);
-        }
-      })
+    app.configure(|cfg| {
+      if federation_enabled {
+        lemmy_apub::http::routes::config(cfg);
+        webfinger::config(cfg);
+      }
+    })
   })
   .disable_signals()
   .bind((settings.bind, settings.federation_port))?

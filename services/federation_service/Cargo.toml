@@ -52,3 +52,4 @@ prometheus = { workspace = true, optional = true }
 actix-web-prom = { workspace = true, optional = true }
 clap = { workspace = true }
 lemmy_federate = { workspace = true }
+serial_test = { workspace = true }

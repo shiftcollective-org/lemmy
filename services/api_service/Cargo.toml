@@ -51,3 +51,4 @@ chrono = { workspace = true }
 prometheus = { workspace = true, optional = true }
 actix-web-prom = { workspace = true, optional = true }
 clap = { workspace = true }
+serial_test = { workspace = true }
