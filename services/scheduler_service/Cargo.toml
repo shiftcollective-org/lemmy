@@ -11,7 +11,7 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-lemmy_server = { version = "=0.18.1", path = "../../" }
+lemmy_server = { version = "=0.19.0-rc.1", path = "../../" }
 lemmy_api = { workspace = true }
 lemmy_api_crud = { workspace = true }
 lemmy_apub = { workspace = true }
