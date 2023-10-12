@@ -1,4 +1,10 @@
-use crate::{context::LemmyContext, request::purge_image_from_pictrs, site::FederatedInstances};
+use crate::{
+  context::LemmyContext,
+  request::purge_image_from_pictrs,
+  sensitive::Sensitive,
+  site::FederatedInstances,
+};
+use actix_web::cookie::{Cookie, SameSite};
 use anyhow::Context;
 use chrono::{DateTime, Utc};
 use lemmy_db_schema::{
@@ -37,6 +43,8 @@ use regex::Regex;
 use rosetta_i18n::{Language, LanguageId};
 use tracing::warn;
 use url::{ParseError, Url};
+
+pub static AUTH_COOKIE_NAME: &str = "auth";
 
 #[tracing::instrument(skip_all)]
 pub async fn is_mod_or_admin(
@@ -367,6 +375,8 @@ pub fn local_site_rate_limit_to_rate_limit_config(
     comment_per_second: l.comment_per_second,
     search: l.search,
     search_per_second: l.search_per_second,
+    import_user_settings: l.import_user_settings,
+    import_user_settings_per_second: l.import_user_settings_per_second,
   }
 }
 
@@ -516,6 +526,7 @@ pub async fn remove_user_data(
     &PersonUpdateForm {
       avatar: Some(None),
       banner: Some(None),
+      bio: Some(None),
       ..Default::default()
     },
   )
@@ -741,6 +752,14 @@ pub fn sanitize_html_federation(data: &str) -> String {
 
 pub fn sanitize_html_federation_opt(data: &Option<String>) -> Option<String> {
   data.as_ref().map(|d| sanitize_html_federation(d))
+}
+
+pub fn create_login_cookie(jwt: Sensitive<String>) -> Cookie<'static> {
+  let mut cookie = Cookie::new(AUTH_COOKIE_NAME, jwt.into_inner());
+  cookie.set_secure(true);
+  cookie.set_same_site(SameSite::Lax);
+  cookie.set_http_only(true);
+  cookie
 }
 
 #[cfg(test)]
